@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model City {
+  id          Int        @id @default(autoincrement())
+  name        String
+  name_native String
+  country     String
+  continent   String
+  latitude    String
+  longitude   String
+  population  String
+  founded     String
+  timezone    String?
+  climate     String?
+  landmarks   Landmark[]
+  isDeleted   Boolean    @default(false)
+}
+
+model Landmark {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  image_url   String?
+  cityId      Int
+  city        City    @relation(fields: [cityId], references: [id])
+  isDeleted   Boolean @default(false)
+}
