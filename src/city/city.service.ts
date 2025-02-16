@@ -14,7 +14,8 @@ export class CityService {
             where: {
                 id: cityId,
                 isDeleted: false
-            }, include: { landmarks: true }
+            },
+             include: { landmarks: true }
         });
     }
     async createCity(data: Prisma.CityCreateInput): Promise<City> {

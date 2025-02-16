@@ -10,6 +10,7 @@ datasource db {
 model City {
   id          Int        @id @default(autoincrement())
   name        String
+  description String
   name_native String
   country     String
   continent   String
@@ -18,17 +19,29 @@ model City {
   population  String
   founded     String
   timezone    String?
+  currency    String?
   climate     String?
   landmarks   Landmark[]
   isDeleted   Boolean    @default(false)
 }
 
 model Landmark {
-  id          Int     @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
+  name           String
+  description    String?
+  image_url      String?
+  visit_duration Int?
+  cityId         Int
+  city           City       @relation(fields: [cityId], references: [id])
+  isDeleted      Boolean    @default(false)
+  category       Category[]
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
   name        String
-  description String?
-  image_url   String?
-  cityId      Int
-  city        City    @relation(fields: [cityId], references: [id])
-  isDeleted   Boolean @default(false)
+  description String
+  iconName    String?
+  landmarkId  Int
+  landmark    Landmark @relation(fields: [landmarkId], references: [id])
 }
