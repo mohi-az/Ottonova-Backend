@@ -13,7 +13,6 @@ interface Category {
     cityName: string;
     cityId: number;
     countryName: string;
-    countryId: number;
     categories: Category[];
   }
   

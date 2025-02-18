@@ -1,59 +1,101 @@
-import { Injectable } from "@nestjs/common";
-import { Category, Prisma, Landmark } from "@prisma/client";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { Prisma, Landmark } from "@prisma/client";
 import { DatabaseService } from "src/database.service";
 import { LandmarkFormater } from "src/utils/formater";
 
 @Injectable()
 export class LandmarkServices {
-
     constructor(private readonly DBService: DatabaseService) { }
-
-    async GetAllLandmard():Promise<Landmarks[]> {
-        const landmarks = await this.DBService.landmark.findMany({
-            where: { isDeleted: false },
-            include: {
-                city: true,
-                LandmarkCategory: {
-                    include: {
-                        category: true
-                    }
+    async getAllLandmarks(): Promise<Landmarks[]> {
+        try {
+            const landmarks = await this.DBService.landmark.findMany({
+                where: { isDeleted: false },
+                include: {
+                    city: true,
+                    LandmarkCategory: { include: { category: true } }
+                },
+                orderBy: {
+                    id: "desc"
                 }
-            }
-        });
-        return LandmarkFormater(landmarks);
+            });
+            return LandmarkFormater(landmarks);
+        } catch (error) {
+            console.error("Error fetching landmarks:", error);
+            throw new HttpException(`Failed to fetch landmarks: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async GetLandmarkById(id: number) {
-        
-        const landmarks = await this.DBService.landmark.findMany({
-            where: { id, isDeleted: false },
-            include: {
-                city: true,
-                LandmarkCategory: {
-                    include: {
-                        category: true
-                    }
+    async getLandmarkById(id: number) {
+        try {
+            const landmarks = await this.DBService.landmark.findMany({
+                where: { id, isDeleted: false },
+                include: {
+                    city: true,
+                    LandmarkCategory: { include: { category: true } }
                 }
-            }
-        });
-        return LandmarkFormater(landmarks);
+            });
+            if (!landmarks) throw new HttpException('landmark not found.', HttpStatus.NOT_FOUND)
+            return LandmarkFormater(landmarks);
+        } catch (error) {
+            console.error("Error fetching landmark:", error);
+            throw new HttpException(`Failed to fetch landmark: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async CreateLandmark(data: Prisma.LandmarkCreateInput & { cityId: number }): Promise<Landmark | []> {
-        const Selectedcity = await this.DBService.city.findUnique({ where: { id: data.cityId } })
-        if (!Selectedcity) return []
-        return this.DBService.landmark.create({
-            data: {
-                name: data.name,
-                description: data.description,
-                image_url: data.image_url,
-                city: { connect: { id: Selectedcity.id } }
-            }
-        });
+    async createLandmark(Data: Prisma.LandmarkCreateInput & { cityId: number, countryName: string, cityName: string }): Promise<Landmark | []> {
+        try {
+            //Create new city for landmark with mandatory data (if it's not exist) then add landmark
+            await this.DBService.city.upsert(
+                {
+                    where: { id: Data.cityId },
+                    update: {},
+                    create: {
+                        name: Data.cityName,
+                        country: Data.countryName,
+                        id: Data.cityId
+                    }
+                })
+            return await this.DBService.landmark.create({
+                data: {
+                    name: Data.name,
+                    description: Data.description,
+                    image_url: Data.image_url,
+                    cityId: Data.cityId,
+                    visit_duration: Data.visit_duration
+                }
+            });
+        }
+        catch (error) {
+            console.error("Error creating landmark:", error);
+            throw new HttpException(`Failed to create landmark: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async UpdateLandmark(params: { data: Prisma.LandmarkUpdateInput, where: Prisma.LandmarkWhereUniqueInput }): Promise<Landmark> {
-        const { data, where } = params
-        return this.DBService.landmark.update({ data, where })
+    async updateLandmark(Data: { data: Prisma.LandmarkUpdateInput, where: Prisma.LandmarkWhereUniqueInput, cityId: number, countryName: string; cityName: string }): Promise<Landmark> {
+        try {
+            //Create new city for landmark with mandatory data (if it's not exist) then update landmark
+            await this.DBService.city.upsert(
+                {
+                    where: { id: Data.cityId },
+                    update: {},
+                    create: {
+                        name: Data.cityName,
+                        country: Data.countryName,
+                        id: Data.cityId
+                    }
+                })
+            const { data, where } = Data;
+            return this.DBService.landmark.update({ data: { ...data, city: { connect: { id: Data.cityId } } }, where })
+        } catch (error) {
+            console.error("Error updating landmark:", error);
+            throw new HttpException(`Failed to update landmark: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async DeleteLandmark(id: number): Promise<Landmark> {
-        return this.DBService.landmark.update({ where: { id }, data: { isDeleted: true } })
+    async deleteLandmark(id: number): Promise<Landmark> {
+        try {
+            const selectedLandmark = await this.DBService.landmark.findUnique({ where: { id } });
+            if (!selectedLandmark) throw new HttpException('landmark not found.', HttpStatus.NOT_FOUND)
+            return this.DBService.landmark.update({ where: { id }, data: { isDeleted: true } })
+        } catch (error) {
+            console.error("Error deleting landmark:", error);
+            throw new HttpException(`Failed to delete landmark: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -9,7 +9,6 @@ export function LandmarkFormater(landmarks: any) {
         cityName: landmark.city.name,
         cityId: landmark.cityId,
         countryName: landmark.city.country,
-        countryId: landmark.city.id,
         categories: landmark.LandmarkCategory.map(lc => ({
             id: lc.category.id,
             name: lc.category.name,

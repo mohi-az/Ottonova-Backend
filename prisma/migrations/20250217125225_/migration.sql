@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "City" ALTER COLUMN "id" DROP DEFAULT;
+DROP SEQUENCE "City_id_seq";

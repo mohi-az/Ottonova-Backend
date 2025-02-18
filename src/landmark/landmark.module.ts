@@ -7,4 +7,4 @@ import { DatabaseService } from "src/database.service";
         controllers: [LandmarkController],
         providers: [LandmarkServices, DatabaseService]
     })
-export class LandmarkModul { }
+export class LandmarkModule { }

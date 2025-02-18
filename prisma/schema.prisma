@@ -8,16 +8,16 @@ datasource db {
 }
 
 model City {
-  id          Int        @id @default(autoincrement())
+  id          Int        @id
   name        String
-  description String
-  name_native String
+  description String?
+  name_native String?
   country     String
-  continent   String
-  latitude    String
-  longitude   String
-  population  String
-  founded     String
+  continent   String?
+  latitude    String?
+  longitude   String?
+  population  String?
+  founded     String?
   timezone    String?
   currency    String?
   climate     String?
