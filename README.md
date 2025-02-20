@@ -2,7 +2,7 @@
 
 
 ## Overview
-**Advenus (Backend)** is a **NestJS**-based RESTful API server that powers the Advenus travel discovery platform. It is fully written in **TypeScript** (with occasional **JavaScript** usage if needed). This backend communicates with a **PostgreSQL** database hosted on **Neon.tech**, providing robust data handling and reliable hosting. We incorporate Docker for containerization, Jest for testing, and Swagger for generating API documentation.
+**Advenus (Backend)** is a **NestJS**-based RESTful API server that powers the Advenus travel discovery platform. It is fully written in **TypeScript** (with occasional **JavaScript** usage if needed). This backend communicates with a **PostgreSQL** database hosted on **Neon.tech**, providing robust data handling and reliable hosting. 
 
 ## Tech Stack
 - **Runtime**: [Node.js](https://nodejs.org/en/)
